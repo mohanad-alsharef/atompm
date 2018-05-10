@@ -237,6 +237,15 @@ function __createEdge(segments,style,edgeId,linkuri)
 		... if the icon is a linktype, we also give it a __linkStyle attribute */
 function __createIcon(node,id)
 {
+
+	//set default values if not present
+	if (!('orientation' in node)){
+		node['orientation'] = {"type": "double", "value": 0};
+	}
+	if (!('scale' in node)){
+		node['scale'] = {"type": "list<double>", "value": [	1,1]};
+	}
+
 	var attrs = utils.mergeDicts(
 						[{'__asuri'	:node['$asuri']['value'],
 						  '__r' 		:node['orientation']['value'],

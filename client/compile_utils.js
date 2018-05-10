@@ -215,7 +215,15 @@ CompileUtils = function(){
 			else
 				/* ignore layout constraints */
 				continue;
-	
+
+			//set default values if not present
+			if (!('orientation' in vobj)){
+				vobj['orientation'] = {'type': 'double', 'value': 0};
+			}
+			if (!('scale' in vobj)){
+				vobj['scale'] = {'type': 'list<double>', 'value': [1,1]};
+			}
+
 			var r  = __getVobjGeomAttrVal(vobj['orientation']['value']),
 				 sx = __getVobjGeomAttrVal(vobj['scale']['value'][0])
 				 sy = __getVobjGeomAttrVal(vobj['scale']['value'][1]);
