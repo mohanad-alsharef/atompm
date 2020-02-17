@@ -1,6 +1,6 @@
 #ignore autosave files
 .autosave.*
-
+.DS_Store
 #Jetbrains project files
 .idea/
 AToMPM.iml
