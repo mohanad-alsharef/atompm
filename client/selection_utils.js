@@ -223,6 +223,31 @@ function __highlightOneByOne()
 	
 	return highlightList;
 }
+
+function __highlightOneByOneWitTimeouts()
+{
+	var highlightList=[];
+	var starturi = __findStartIcon();
+	var next = starturi;
+	debugger;
+	var step = function() {
+		__highlight(next);
+		if(next.includes("RuleIcon")|| next.includes("QueryIcon"))
+		{
+			highlightList.push(...elementsInLHS(next));//push elements in LHS
+			highlightList.push(...elementsInRHS(next));//push elements in RHS
+		}
+		highlightList.push(...__getEdgesOutUri(next));
+		next = highlightList.shift();
+
+		if(next!=undefined) {
+			setTimeout(step,1000);
+		}
+	}
+
+	step();
+}
+
 /*
 returns a list of icons that's not MDE icon.
 */
@@ -294,7 +319,7 @@ function elementsInLHS(rule)
 	{
 		if(__icons[iconsList[i]].icon.getBBox().x <= maxWidth && __icons[iconsList[i]].icon.getBBox().x >= x && __icons[iconsList[i]].icon.getBBox().y <= maxheight && __icons[iconsList[i]].icon.getBBox().y >= y)
 		{
-			__highlight(iconsList[i]);
+			
 			list.push(iconsList[i]);
 		}
 	}
@@ -314,7 +339,7 @@ function elementsInRHS(rule)
 	{
 		if(__icons[iconsList[i]].icon.getBBox().x <= maxWidth && __icons[iconsList[i]].icon.getBBox().x >= minWidth && __icons[iconsList[i]].icon.getBBox().y <= maxheight && __icons[iconsList[i]].icon.getBBox().y >= y)
 		{
-			__highlight(iconsList[i]);
+			
 			list.push(iconsList[i]);
 		}
 	}
