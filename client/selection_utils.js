@@ -143,6 +143,9 @@ function __selectionContainsType(type)
 								 (type == __NODETYPE && it in __icons);
 		 			});
 }
+function doSetTimeout(i) {
+	setTimeout(function() { alert(i); }, 1000);
+  }
 
 /* temporarily highlight specified icon (e.g., to draw attention on it) without 
  	disrupting other highlighted elements */
@@ -158,6 +161,164 @@ function __flash(uri,color,timeout)
 		}
 	}
 	window.setTimeout(turnOff,timeout || 500);
+}
+
+function __getEdgesOutUri(uri)
+{
+	var edgesOutUriList = [];
+	for(i=0;i<__icons[uri]["edgesOut"].length;i++)
+	{
+		var s = __icons[uri]["edgesOut"][i];
+		var t = s.substr(s.indexOf('-')+2,s.length-1);
+		edgesOutUriList.push(t);
+	}
+	return edgesOutUriList;
+}
+
+function __findStartIcon()
+{
+	var iconsList=[];
+	var starturi="";
+	for(item in __icons)
+	{
+		iconsList.push(item)
+	}
+	//get the start icon uri
+	for(i=0;i<iconsList.length;i++)
+	{
+		if(iconsList[i].includes("StartIcon"))
+		{
+			starturi = iconsList[i];
+		}
+	}
+	return starturi;
+}
+
+/*
+highlight MDE icons and elements in the rule and query icons one by one.
+*/
+function __highlightOneByOne()
+{
+	var highlightList=[];
+	var starturi = __findStartIcon();
+	var next = starturi;
+	debugger;
+	
+
+	while(next)
+	{
+		__highlight(next);
+		if(next.includes("RuleIcon")|| next.includes("QueryIcon"))
+		{
+			elementsInLHS(next);//highlight elements in LHS
+			//highlightList.push(...elementsInLHS(next));
+			elementsInRHS(next);//high light elements in RHS
+			//highlightList.push(...elementsInRHS(next));
+		}
+			
+		highlightList.push(...__getEdgesOutUri(next));
+		next = highlightList.shift();
+	}
+
+	
+	return highlightList;
+}
+/*
+returns a list of icons that's not MDE icon.
+*/
+function __findIconsNotMDE()
+{
+	var iconsList=[];
+	for(item in __icons)
+	{
+		if(!(item.includes("BlockBasedMDE")))
+		{
+			iconsList.push(item);
+		}
+	}
+	
+	return iconsList;
+}
+function __findRuleIcon()
+{
+	var iconsList=[];
+	var RuleIconList = [];
+	for(item in __icons)
+	{
+		iconsList.push(item)
+	}
+	for(i=0;i<iconsList.length;i++)
+	{
+		if(iconsList[i].includes("RuleIcon")|| iconsList[i].includes("QueryIcon"))
+		{
+			RuleIconList.push(iconsList[i]);
+		}
+	}
+	return RuleIconList;
+}
+function __findIconsInRule()
+{
+	debugger;
+	var RuleIconList = __findRuleIcon();
+	var iconsList = __findIconsNotMDE();
+	for(i=0;i<RuleIconList.length;i++)
+	{
+		var List = [];
+		var x = __icons[RuleIconList[i]].icon.getBBox().x;
+		var y = __icons[RuleIconList[i]].icon.getBBox().y;
+		var maxWidth = __icons[RuleIconList[i]].icon.getBBox().x+__icons[RuleIconList[i]].icon.getBBox().width;
+		var maxheight = __icons[RuleIconList[i]].icon.getBBox().y+__icons[RuleIconList[i]].icon.getBBox().height;
+		for(j=0;j<iconsList.length;j++)
+		{
+			if(__icons[iconsList[j]].icon.getBBox().x <= maxWidth && __icons[iconsList[j]].icon.getBBox().x >= x && __icons[iconsList[j]].icon.getBBox().y <= maxheight && __icons[iconsList[j]].icon.getBBox().y >= y)
+			{
+				__highlight(iconsList[j]);
+				List.push(iconsList[j]);
+			}
+		}
+	}
+	return List;
+}
+
+ 
+function elementsInLHS(rule)
+{
+	var list =[];
+	var iconsList = __findIconsNotMDE();
+	var x =  __icons[rule].icon.getBBox().x;
+	var y =  __icons[rule].icon.getBBox().y;
+	var maxWidth =  __icons[rule].icon.getBBox().x +__icons[rule].icon.getBBox().width/2;
+	var maxheight = __icons[rule].icon.getBBox().y + __icons[rule].icon.getBBox().height;
+
+	for(i=0;i<iconsList.length;i++)
+	{
+		if(__icons[iconsList[i]].icon.getBBox().x <= maxWidth && __icons[iconsList[i]].icon.getBBox().x >= x && __icons[iconsList[i]].icon.getBBox().y <= maxheight && __icons[iconsList[i]].icon.getBBox().y >= y)
+		{
+			__highlight(iconsList[i]);
+			list.push(iconsList[i]);
+		}
+	}
+	return list;
+}
+
+function elementsInRHS(rule)
+{
+	var list =[];
+	var iconsList = __findIconsNotMDE();
+	var minWidth =  __icons[rule].icon.getBBox().x+__icons[rule].icon.getBBox().width/2;
+	var y =  __icons[rule].icon.getBBox().y;
+	var maxWidth =  __icons[rule].icon.getBBox().x +__icons[rule].icon.getBBox().width;
+	var maxheight = __icons[rule].icon.getBBox().y + __icons[rule].icon.getBBox().height;
+
+	for(i=0;i<iconsList.length;i++)
+	{
+		if(__icons[iconsList[i]].icon.getBBox().x <= maxWidth && __icons[iconsList[i]].icon.getBBox().x >= minWidth && __icons[iconsList[i]].icon.getBBox().y <= maxheight && __icons[iconsList[i]].icon.getBBox().y >= y)
+		{
+			__highlight(iconsList[i]);
+			list.push(iconsList[i]);
+		}
+	}
+	return list;
 }
 
 

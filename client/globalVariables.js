@@ -53,3 +53,6 @@ var KEY_RIGHT_ARROW = 39,
 var MOUSE_RIGHT = 2,
 	MOUSE_LEFT = 0,
 	MOUSE_MIDDLE = 1;
+
+
+	
