@@ -166,7 +166,7 @@
 		{
 			"name": "snapToTarget",
 			"event": "post-create",
-			"code": "/*newline*/      var targetNodes = getNeighbors('>'),/*newline*/          sourceNodes = getNeighbors('<');/*newline*/    /*newline*/        var targetNode = targetNodes[0],/*newline*/            sourceNode = sourceNodes[0];/*newline*/        /*newline*/        var sourcePosition = getAttr('position',sourceNode);/*newline*//*newline*/        setAttr('position',[sourcePosition[0]+274,sourcePosition[1]+250],targetNode);",
+			"code": "/*newline*/      var targetNodes = getNeighbors('>'),/*newline*/          sourceNodes = getNeighbors('<');/*newline*/    /*newline*/        var targetNode = targetNodes[0],/*newline*/            sourceNode = sourceNodes[0];/*newline*/        /*newline*/        var sourcePosition = getAttr('position',sourceNode);/*newline*//*newline*/        setAttr('position',[sourcePosition[0]+272,sourcePosition[1]+254],targetNode);",
 			"targetType": "failToAbstractRule"
 		},
 		{
