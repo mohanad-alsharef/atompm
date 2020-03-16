@@ -1,0 +1,262 @@
+{
+	"types": {
+		"Family": [
+			{
+				"name": "lastName",
+				"type": "string",
+				"default": ""
+			},
+			{
+				"name": "position",
+				"type": "list<int>",
+				"default": [
+					0,
+					0
+				]
+			}
+		],
+		"Member": [
+			{
+				"name": "firstName",
+				"type": "string",
+				"default": ""
+			},
+			{
+				"name": "position",
+				"type": "list<int>",
+				"default": [
+					0,
+					0
+				]
+			}
+		],
+		"FamilyDaughter": [],
+		"FamilyMother": [],
+		"FamilyFather": [],
+		"FamilySon": [],
+		"Person": [
+			{
+				"name": "fullName",
+				"type": "string",
+				"default": ""
+			},
+			{
+				"name": "position",
+				"type": "list<int>",
+				"default": [
+					0,
+					0
+				]
+			}
+		],
+		"Male": [
+			{
+				"name": "fullName",
+				"type": "string",
+				"default": ""
+			},
+			{
+				"name": "position",
+				"type": "list<int>",
+				"default": [
+					0,
+					0
+				]
+			}
+		],
+		"Female": [
+			{
+				"name": "fullName",
+				"type": "string",
+				"default": ""
+			},
+			{
+				"name": "position",
+				"type": "list<int>",
+				"default": [
+					0,
+					0
+				]
+			}
+		],
+		"Positionable": [
+			{
+				"name": "position",
+				"type": "list<int>",
+				"default": [
+					0,
+					0
+				]
+			}
+		]
+	},
+	"constraints": [
+		{
+			"name": "noAbstractInstances",
+			"event": "pre-create",
+			"code": "false",
+			"targetType": "Person"
+		},
+		{
+			"name": "noAbstractInstances",
+			"event": "pre-create",
+			"code": "false",
+			"targetType": "Positionable"
+		}
+	],
+	"actions": [],
+	"cardinalities": {
+		"Family": [
+			{
+				"dir": "in",
+				"type": "FamilyDaughter",
+				"min": "0",
+				"max": "Infinity"
+			},
+			{
+				"dir": "in",
+				"type": "FamilyMother",
+				"min": "0",
+				"max": "Infinity"
+			},
+			{
+				"dir": "in",
+				"type": "FamilyFather",
+				"min": "0",
+				"max": "Infinity"
+			},
+			{
+				"dir": "in",
+				"type": "FamilySon",
+				"min": "0",
+				"max": "Infinity"
+			}
+		],
+		"Member": [
+			{
+				"dir": "out",
+				"type": "FamilyDaughter",
+				"min": "0",
+				"max": "Infinity"
+			},
+			{
+				"dir": "out",
+				"type": "FamilyMother",
+				"min": "0",
+				"max": "Infinity"
+			},
+			{
+				"dir": "out",
+				"type": "FamilyFather",
+				"min": "0",
+				"max": "Infinity"
+			},
+			{
+				"dir": "out",
+				"type": "FamilySon",
+				"min": "0",
+				"max": "Infinity"
+			}
+		],
+		"FamilyDaughter": [
+			{
+				"dir": "in",
+				"type": "Member",
+				"min": "0",
+				"max": "1"
+			},
+			{
+				"dir": "out",
+				"type": "Family",
+				"min": "0",
+				"max": "1"
+			}
+		],
+		"FamilyMother": [
+			{
+				"dir": "in",
+				"type": "Member",
+				"min": "0",
+				"max": "1"
+			},
+			{
+				"dir": "out",
+				"type": "Family",
+				"min": "0",
+				"max": "1"
+			}
+		],
+		"FamilyFather": [
+			{
+				"dir": "in",
+				"type": "Member",
+				"min": "0",
+				"max": "1"
+			},
+			{
+				"dir": "out",
+				"type": "Family",
+				"min": "0",
+				"max": "1"
+			}
+		],
+		"FamilySon": [
+			{
+				"dir": "in",
+				"type": "Member",
+				"min": "0",
+				"max": "1"
+			},
+			{
+				"dir": "out",
+				"type": "Family",
+				"min": "0",
+				"max": "1"
+			}
+		],
+		"Person": [],
+		"Male": [],
+		"Female": [],
+		"Positionable": []
+	},
+	"legalConnections": {
+		"Member": {
+			"Family": [
+				"FamilyDaughter",
+				"FamilyMother",
+				"FamilyFather",
+				"FamilySon"
+			]
+		}
+	},
+	"connectorTypes": {
+		"FamilyDaughter": "visual",
+		"FamilyMother": "visual",
+		"FamilyFather": "visual",
+		"FamilySon": "visual"
+	},
+	"types2parentTypes": {
+		"Family": [
+			"Positionable"
+		],
+		"Member": [
+			"Positionable"
+		],
+		"FamilyDaughter": [],
+		"FamilyMother": [],
+		"FamilyFather": [],
+		"FamilySon": [],
+		"Person": [
+			"Positionable"
+		],
+		"Male": [
+			"Positionable",
+			"Person"
+		],
+		"Female": [
+			"Positionable",
+			"Person"
+		],
+		"Positionable": []
+	}
+}
