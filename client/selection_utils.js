@@ -143,9 +143,7 @@ function __selectionContainsType(type)
 								 (type == __NODETYPE && it in __icons);
 		 			});
 }
-function doSetTimeout(i) {
-	setTimeout(function() { alert(i); }, 1000);
-  }
+
 
 /* temporarily highlight specified icon (e.g., to draw attention on it) without 
  	disrupting other highlighted elements */
@@ -163,6 +161,7 @@ function __flash(uri,color,timeout)
 	window.setTimeout(turnOff,timeout || 500);
 }
 
+//return EdgesOut items' ID of an icon.
 function __getEdgesOutUri(uri)
 {
 	var edgesOutUriList = [];
@@ -173,6 +172,34 @@ function __getEdgesOutUri(uri)
 		edgesOutUriList.push(t);
 	}
 	return edgesOutUriList;
+}
+
+//return edgesOut items' name of an icon, e.g. /startIcon or /RuleIcon
+function __getEdgesOutItem(uri)
+{
+	var edgesOutUriList = [];
+	for(i=0;i<__icons[uri]["edgesOut"].length;i++)
+	{
+		var s = __icons[uri]["edgesOut"][i];
+		var t = s.substr(s.indexOf('-')+2,s.length-1);
+		var m = t.substr(0,t.indexOf("/",36));
+		edgesOutUriList.push(m);
+	}
+	return edgesOutUriList;
+}
+
+//return edgesin items' name of an icon, e.g. /startIcon or /RuleIcon
+function __getEdgesInItem(uri)
+{
+	var edgesInUriList = [];
+	for(i=0;i<__icons[uri]["edgesIn"].length;i++)
+	{
+		var s = __icons[uri]["edgesIn"][i];
+		var t = s.substr(0,s.indexOf('-'));
+		var m = t.substr(0,t.indexOf("/",36));
+		edgesInUriList.push(m);
+	}
+	return edgesInUriList;
 }
 
 function __findStartIcon()
@@ -202,55 +229,81 @@ function __highlightOneByOne()
 	var highlightList=[];
 	var starturi = __findStartIcon();
 	var next = starturi;
-	debugger;
 	
-
 	while(next)
 	{
 		__highlight(next);
 		if(next.includes("RuleIcon")|| next.includes("QueryIcon"))
 		{
-			elementsInLHS(next);//highlight elements in LHS
-			//highlightList.push(...elementsInLHS(next));
-			elementsInRHS(next);//high light elements in RHS
-			//highlightList.push(...elementsInRHS(next));
+			//elementsInLHS(next);//highlight elements in LHS
+			highlightList.push(...elementsInLHS(next));
+			//elementsInRHS(next);//high light elements in RHS
+			highlightList.push(...elementsInRHS(next));
 		}
 			
 		highlightList.push(...__getEdgesOutUri(next));
 		next = highlightList.shift();
 	}
 
-	
 	return highlightList;
 }
 
+//highlight items of the MDE model and items in the LHS and RHS rules and items matches LHS in the maze.
 function __highlightOneByOneWitTimeouts()
 {
 	var highlightList=[];
 	var starturi = __findStartIcon();
 	var next = starturi;
-	debugger;
+	var LHS = [];
+	var RHS =[];
+	var LHSSingleMatchedList=[];
+	var LHSMultipleMatchedList =[];
+	
 	var step = function() {
 		__highlight(next);
 		if(next.includes("RuleIcon")|| next.includes("QueryIcon"))
 		{
-			highlightList.push(...elementsInLHS(next));//push elements in LHS
-			highlightList.push(...elementsInRHS(next));//push elements in RHS
-		}
-		highlightList.push(...__getEdgesOutUri(next));
-		next = highlightList.shift();
+			LHS = elementsInLHS(next);
+			LHSSingleMatchedList = __LHSSingleElementMatching(__linearListSorting(LHS));
+			LHSMultipleMatchedList = __LHSMultipleElementsMatching(__linearListSorting(RHS));
+			RHS = elementsInRHS(next);
 
+			highlightList.push(...LHS);
+			if(__linearListSorting(LHS).length === 1)
+			{
+				highlightList.push(...LHSSingleMatchedList);
+			}
+			if(__linearListSorting(LHS).length > 1)
+			{
+				highlightList.push(...LHSMultipleMatchedList);
+			}
+
+			highlightList.push(...RHS);//push elements in RHS
+		}
+
+		for(k=0;k<__getEdgesOutUri(next).length;k++)//add getEdgesout items that's MDE.
+		{
+			if(__getEdgesOutUri(next)[k].includes("MDE"))
+			{
+				highlightList.push(__getEdgesOutUri(next)[k]);
+			}
+		}
+		next = highlightList.shift();
 		if(next!=undefined) {
 			setTimeout(step,1000);
 		}
+	
 	}
 
 	step();
+
 }
 
 /*
 returns a list of icons that's not MDE icon.
 */
+
+//return icons list in the model that's not MDE.
 function __findIconsNotMDE()
 {
 	var iconsList=[];
@@ -264,6 +317,29 @@ function __findIconsNotMDE()
 	
 	return iconsList;
 }
+
+//return a list of icons in the maze by specifies the location on the page.
+function __findMazeIcons()
+{
+	var list = __findIconsNotMDE();
+	var MazeIconList = [];
+	var maxWidth = 500;
+	var maxheight = 700;
+	for(i=0;i<list.length;i++)
+	{
+		var x = __icons[list[i]].icon.getBBox().x;
+		var y = __icons[list[i]].icon.getBBox().y;
+		if(x<maxWidth && y<maxheight)
+		{
+			//__highlight(list[i]);
+			MazeIconList.push(list[i]);
+		}
+	}
+	return MazeIconList;
+}
+
+
+//returns a list of rule icons or query icons ID.
 function __findRuleIcon()
 {
 	var iconsList=[];
@@ -281,6 +357,8 @@ function __findRuleIcon()
 	}
 	return RuleIconList;
 }
+
+//returns 
 function __findIconsInRule()
 {
 	debugger;
@@ -303,6 +381,117 @@ function __findIconsInRule()
 		}
 	}
 	return List;
+}
+
+
+
+function __LHSSingleElementMatching(id)
+{
+	var list=[];
+	var MazeIconList = __findMazeIcons();
+	for(i=0;i<MazeIconList.length;i++)
+	{
+		if(MazeIconList[i].includes(id.substr(0,id.indexOf('/',36))))
+		{
+			list.push(MazeIconList[i]);
+		}
+	}
+	return list;
+}
+
+//return the icon type of a entered icon id.
+function __IconType(id)
+{
+	var result = id.substr(0,id.indexOf('/',37));
+	result = result.substr(result.indexOf('/',33));
+	return result;
+}
+
+
+function __LHSMultipleElementsMatching(list)//ordered list of icon ids
+{
+	//debugger;
+	var finalList =[];
+	//var MazeIconList = __findMazeIcons();
+	var temp="";
+	var currentID = __LHSSingleElementMatching(list[0])[0];
+	finalList.push(currentID);
+	for(m=0;m<(list.length-1);m++)
+	{
+		for(n=0;n<__getEdgesOutItem(currentID).length;n++)
+		{
+			if(__getEdgesOutItem(currentID)[n].includes(__IconType(list[m+1])))
+			{
+				temp = __getEdgesOutUri(currentID)[n];
+				finalList.push(temp);
+			}
+		}
+		currentID = temp;
+	}
+	return finalList;
+}
+
+//sort a list of icons into a root to leaf order
+function __linearListSorting(list)
+{
+	var sortedList = [];
+	var currentID="";
+	//debugger;
+	for(k=0;k<list.length;k++)//find the first item first
+	{
+		if(__getEdgesInItem(list[k]).length === 0)
+		{
+			sortedList[0]=list[k];
+			currentID = list[k];    
+		}
+	}
+	while(__getEdgesOutUri(currentID).length !==0)
+	{
+		for(j=0;j<list.length;j++)
+		{
+			if(__getEdgesOutUri(currentID).includes(list[j]))
+			{
+				sortedList.push(list[j]);//find the second item
+				var temp = list[j];
+			}
+		}
+		currentID = temp;
+	}
+	return sortedList;
+}
+
+//match icons in the rule with the maze, and return a list of matched icons' id.
+function __LHSElementsMatching(rule)
+{
+	debugger;
+	var LHSList = elementsInLHS(rule);
+	var MazeIconList = __findMazeIcons();
+	var MatchedIconsList =[];
+
+	for(i=0;i<LHSList.length;i++)
+	{
+		if(!(LHSList[i].includes("Link")))
+		{
+			for(j=0;j<MazeIconList.length;j++)
+			{
+				if(MazeIconList[j].includes(LHSList[1].substr(0,LHSList[1].length-12)))
+				{
+					MatchedIconsList.push(...__getEdgesInItem(MazeIconList[j]));
+					MatchedIconsList.push(MazeIconList[j]);
+					//MatchedIconsList.push(__getEdgesOutUri(MazeIconList[j]));
+					__highlight(MazeIconList[j]);
+					/*if(__getEdgesOutItem(MatchedIconsList[j]).contains(__getEdgesOutItem(MazeIconList[i])))
+					{
+						MatchedIconsList.push(MazeIconList[j]);
+					}*/
+					
+			
+				}	
+			}
+		}	
+	}
+	
+	return MatchedIconsList;
 }
 
  
