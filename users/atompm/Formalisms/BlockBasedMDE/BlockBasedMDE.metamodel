@@ -103,7 +103,6 @@
 		"fail": [],
 		"success": [],
 		"Entry": [],
-		"SameConnector": [],
 		"next": [],
 		"failToAbstractRule": [],
 		"exit": [],
@@ -116,7 +115,8 @@
 					0
 				]
 			}
-		]
+		],
+		"SameConnector": []
 	},
 	"constraints": [
 		{
@@ -281,14 +281,14 @@
 				"max": "Infinity"
 			},
 			{
-				"dir": "out",
-				"type": "SameConnector",
+				"dir": "in",
+				"type": "exit",
 				"min": "0",
 				"max": "Infinity"
 			},
 			{
-				"dir": "in",
-				"type": "exit",
+				"dir": "out",
+				"type": "SameConnector",
 				"min": "0",
 				"max": "Infinity"
 			}
@@ -299,18 +299,24 @@
 				"type": "Entry",
 				"min": "0",
 				"max": "Infinity"
-			}
-		],
-		"RuleEntry": [
+			},
 			{
 				"dir": "in",
 				"type": "SameConnector",
 				"min": "0",
 				"max": "Infinity"
-			},
+			}
+		],
+		"RuleEntry": [
 			{
 				"dir": "out",
 				"type": "Entry",
+				"min": "0",
+				"max": "Infinity"
+			},
+			{
+				"dir": "in",
+				"type": "SameConnector",
 				"min": "0",
 				"max": "Infinity"
 			}
@@ -319,6 +325,12 @@
 			{
 				"dir": "out",
 				"type": "Entry",
+				"min": "0",
+				"max": "Infinity"
+			},
+			{
+				"dir": "in",
+				"type": "SameConnector",
 				"min": "0",
 				"max": "Infinity"
 			}
@@ -389,20 +401,6 @@
 				"max": "1"
 			}
 		],
-		"SameConnector": [
-			{
-				"dir": "in",
-				"type": "RuleExit",
-				"min": "0",
-				"max": "1"
-			},
-			{
-				"dir": "out",
-				"type": "RuleEntry",
-				"min": "0",
-				"max": "1"
-			}
-		],
 		"next": [
 			{
 				"dir": "in",
@@ -469,7 +467,33 @@
 				"max": "1"
 			}
 		],
-		"Positionable": []
+		"Positionable": [],
+		"SameConnector": [
+			{
+				"dir": "in",
+				"type": "RuleExit",
+				"min": "0",
+				"max": "1"
+			},
+			{
+				"dir": "out",
+				"type": "AbstractEntry",
+				"min": "0",
+				"max": "1"
+			},
+			{
+				"dir": "out",
+				"type": "RuleEntry",
+				"min": "0",
+				"max": "1"
+			},
+			{
+				"dir": "out",
+				"type": "Start",
+				"min": "0",
+				"max": "1"
+			}
+		]
 	},
 	"legalConnections": {
 		"Rule": {
@@ -502,7 +526,13 @@
 			]
 		},
 		"RuleExit": {
+			"AbstractEntry": [
+				"SameConnector"
+			],
 			"RuleEntry": [
+				"SameConnector"
+			],
+			"Start": [
 				"SameConnector"
 			]
 		},
@@ -544,10 +574,10 @@
 		"fail": "visual",
 		"success": "visual",
 		"Entry": "visual",
-		"SameConnector": "visual",
 		"next": "visual",
 		"failToAbstractRule": "visual",
-		"exit": "visual"
+		"exit": "visual",
+		"SameConnector": "visual"
 	},
 	"types2parentTypes": {
 		"Rule": [
@@ -578,10 +608,10 @@
 		"fail": [],
 		"success": [],
 		"Entry": [],
-		"SameConnector": [],
 		"next": [],
 		"failToAbstractRule": [],
 		"exit": [],
-		"Positionable": []
+		"Positionable": [],
+		"SameConnector": []
 	}
 }

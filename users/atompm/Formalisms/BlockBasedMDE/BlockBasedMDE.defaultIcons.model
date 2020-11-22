@@ -18199,7 +18199,7 @@
 							"21": {
 								"textContent": {
 									"type": "string",
-									"value": "T..."
+									"value": "*"
 								},
 								"style": {
 									"type": "map<string,string>",
@@ -18358,7 +18358,7 @@
 							"21": {
 								"textContent": {
 									"type": "string",
-									"value": "T..."
+									"value": "QueryName"
 								},
 								"style": {
 									"type": "map<string,string>",
@@ -18517,7 +18517,7 @@
 							"21": {
 								"textContent": {
 									"type": "string",
-									"value": "T..."
+									"value": "RuleName"
 								},
 								"style": {
 									"type": "map<string,string>",
@@ -23235,7 +23235,7 @@
 			"428": {
 				"textContent": {
 					"type": "string",
-					"value": "T..."
+					"value": "*"
 				},
 				"style": {
 					"type": "map<string,string>",
@@ -23266,7 +23266,7 @@
 			"430": {
 				"textContent": {
 					"type": "string",
-					"value": "T..."
+					"value": "QueryName"
 				},
 				"style": {
 					"type": "map<string,string>",
@@ -23297,7 +23297,7 @@
 			"432": {
 				"textContent": {
 					"type": "string",
-					"value": "T..."
+					"value": "RuleName"
 				},
 				"style": {
 					"type": "map<string,string>",
