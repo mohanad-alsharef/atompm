@@ -329,6 +329,22 @@ function _saveModel(fname,backup,autosave)
 	}
 }
 
+/* For MDE transformation by mohanad 
+save current state model to prepare it for MDE transformation
+
+save changes on a prenamed file or create a file with a defult name for a new file*/
+
+function _prepSave(fname)
+{
+	if( fname == undefined ) {
+		fname = 'TransTempMDE.model';
+	}
+
+	DataUtils.savem(fname);
+	__saveas = fname;
+	WindowManagement.setWindowTitle();
+}
+
 
 /* TBI:: 
 	. unselect invisible items
