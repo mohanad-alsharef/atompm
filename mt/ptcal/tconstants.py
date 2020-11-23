@@ -49,8 +49,14 @@ class TConstants :
 				'TransformationRule'
 	TRANSFMM	= '/Formalisms/__Transformations__/Transformation/Transformation'
 
-	''' hergin :: motif-integration '''
+	''' hergin :: motif-integration :: start  '''
 	MOTIFMM	= '/Formalisms/__Transformations__/Transformation/MoTif'
 	TCOREMM = '/Formalisms/__Transformations__/Transformation/T-Core'
+	''' hergin :: motif-integration :: end '''
+
+	''' mohanad :: MDE-integration :: start  '''
+	MDE = '/Formalisms/BlockBasedMDE/BlockBasedMDE'
+	''' mohanad :: MDE-integration :: end  '''
+
 
 
