@@ -193,6 +193,20 @@ class MdeContext(TransformationContext) :
         currentRhsNode =  rhsstart
         self.lastNode = self.lastNode + 1
         lhsNode = self.lastNode
+
+        #finding bird nodes
+        for id in lhs:
+            if self.checkType(id) == 'Bird':
+                lhsBirdId = id
+                lhsBirdFacing = self.t['nodes'][id]['facing']['value']
+        for id in rhs:
+            if self.checkType(id) == 'Bird':
+                rhsBirdId = id
+                rhsBirdFacing = self.t['nodes'][id]['facing']['value']
+
+        turnRight= "toFace =''\n\ncurrentFace = getAttr('facing','0')\n\nif currentFace == 'Right':\n    toFace = 'Down'\nelif currentFace == 'Down':\n    toFace = 'Left'\nelif currentFace == 'Left':\n    toFace = 'Up'\nelif currentFace == 'Up':\n    toFace = 'Right'\n\n\nsetAttr('facing',toFace, '0')"
+        turnLeft= "toFace =''\n\ncurrentFace = getAttr('facing','0')\n\nif currentFace == 'Right':\n    toFace = 'Up'\nelif currentFace == 'Up':\n    toFace = 'Left'\nelif currentFace == 'Left':\n    toFace = 'Down'\nelif currentFace == 'Down':\n    toFace = 'Right'\n\n\nsetAttr('facing',toFace, '0')"
+        
         rule = {'nodes':{}, 'edges':[], 'metamodels':['/Formalisms/__Transformations__/TransformationRule/TransformationRule', '/Formalisms/Bird/Bird.pattern']}
         rule ['nodes'][str(lhsNode)] = {'Condition': {
                                             'type': 'code', 
@@ -327,7 +341,7 @@ class MdeContext(TransformationContext) :
 					                        "value": True},
 				                        "facing": {
 					                        "type": "code",
-					                        "value": "result = getAttr()=='"+str(self.birdMazeFacing)+"'"},
+					                        "value": "result = True"},
 				                        "position": {
 					                        "type": "code",
 					                    "value": "result = getAttr()[0]<"+str(self.MazePosition)},
@@ -349,7 +363,7 @@ class MdeContext(TransformationContext) :
 					                        "type": "boolean"},
 				                        "facing": {
 					                        "type": "code",
-					                        "value": "result ='"+str(f)+"'"},
+					                        "value": "result = getAttr()"},
 				                        "position": {
 					                        "type": "code",
 					                        "value": "result = getAttr()"},
@@ -444,6 +458,7 @@ class MdeContext(TransformationContext) :
                                     lbl = lbl+1
             return lbl
         
+        # creating and labeling the pattern
         label = labelBird(label)
         label = labelPig(label)
         createLhsNode('Empty')
@@ -453,7 +468,7 @@ class MdeContext(TransformationContext) :
         
         #move
         if lhsBirdFacing == rhsBirdFacing:
-
+            
             
             currentLhsNodeOutgoingEdges = self.findToEdges(currentLhsNode)
             currentRhsNodeOutgoingEdges = self.findToEdges(currentRhsNode)
@@ -491,27 +506,13 @@ class MdeContext(TransformationContext) :
                         label = label+1
                         label = labelOn(currentLhsNode,currentRhsNode,label)
         elif lhsBirdFacing != rhsBirdFacing:
-            #turn
-            currentLhsNodeOutgoingEdges = self.findToEdges(currentLhsNode)
-            currentRhsNodeOutgoingEdges = self.findToEdges(currentRhsNode)
-            for xnode in currentLhsNodeOutgoingEdges:
-                currentLhsNode = xnode['dest']
-                if currentLhsNode not in labeled:
-                    if self.t['nodes'][currentLhsNode]['$type']== self.birdmodel+'/south':
-                        createLhsTileLink(currentLhsNode,'south')
-                        linkedLhsEdges = self.findToEdges(xnode['dest'])
-                        currentLhsNode = linkedLhsEdges[0]['dest']
-                        for yNode in currentRhsNodeOutgoingEdges:
-                            if yNode['dest'] not in labeled and self.t['nodes'][yNode['dest']]['$type']== self.birdmodel+'/south':
-                                createRhsTileLink(yNode['dest'],'south')
-                                linkedRhsEdges = self.findToEdges(yNode['dest'])
-                                currentRhsNode = linkedRhsEdges[0]['dest']
-                        label = label+1
-                        createLhsNode('Empty')
-                        createRhsNode('Empty')
-                        label = label+1
-                        label = labelOn(currentLhsNode,currentRhsNode,label)
-
+            #turn left
+            if lhsBirdFacing == 'Right' and rhsBirdFacing == 'Up' or lhsBirdFacing == 'Up' and rhsBirdFacing == 'Left' or lhsBirdFacing == 'Left' and rhsBirdFacing == 'Down' or lhsBirdFacing == 'Down' and rhsBirdFacing == 'Right':
+                rule ['nodes'][str(rhsNode)]['Action']['value']= turnLeft
+            #turn right
+            elif lhsBirdFacing == 'Right' and rhsBirdFacing == 'Down' or lhsBirdFacing == 'Down' and rhsBirdFacing == 'Left' or lhsBirdFacing == 'Left' and rhsBirdFacing == 'Up' or lhsBirdFacing == 'Up' and rhsBirdFacing == 'Right':
+                rule ['nodes'][str(rhsNode)]['Action']['value']= turnRight
+            
 
 
         #genertae the edges
@@ -530,7 +531,7 @@ class MdeContext(TransformationContext) :
             for missingEdge in currentRhsNodeIncommingEdges:
                 if missingEdge not in rule['edges']:
                     rule['edges'].append(missingEdge)
-    
+
         return rule
         
     def createQueryPattern(self,ruleId):
@@ -542,6 +543,7 @@ class MdeContext(TransformationContext) :
         currentLhsNode =   lhsstart
         self.lastNode = self.lastNode + 1
         lhsNode = self.lastNode
+
         rule = {'nodes':{}, 'edges':[], 'metamodels':['/Formalisms/__Transformations__/TransformationRule/TransformationRule', '/Formalisms/Bird/Bird.pattern']}
         rule ['nodes'][str(lhsNode)] = {'Condition': {
                                             'type': 'code', 
