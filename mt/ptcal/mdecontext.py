@@ -325,7 +325,7 @@ class MdeContext(TransformationContext) :
 
         def createBirdNode(place,nodeId,f):
             if place == 'lhs':
-                f= self.birdMazeFacing= self.t['nodes'][nodeId]['facing']['value']
+                #f= self.birdMazeFacing= self.t['nodes'][nodeId]['facing']['value']
                 labeled.append(nodeId)
                 rule['nodes'][nodeId] = {"__pLabel": {
                         					"type": "string",
@@ -348,7 +348,7 @@ class MdeContext(TransformationContext) :
 				                        "$type": "/Formalisms/Bird/Bird.pattern/__pBird"}
 
             elif place == 'rhs':
-                f= self.birdMazeFacing= self.t['nodes'][nodeId]['facing']['value']
+                #f= self.birdMazeFacing= self.t['nodes'][nodeId]['facing']['value']
                 labeled.append(nodeId)
                 rule['nodes'][nodeId] = {"__pLabel": {
 					                        "type": "string",
@@ -458,6 +458,84 @@ class MdeContext(TransformationContext) :
                                     lbl = lbl+1
             return lbl
         
+        # check if there is a previous On link to the current node and the node connected to that link is a bird
+        def isBirdOnTile(id):
+            birdId=-1
+            edgeList=self.findFromEdges(id)
+            for node in edgeList:
+                x = node['src']
+                if self.checkType(x) =='On':
+                    birdEdgeList=self.findFromEdges(x)
+                    prevNode = birdEdgeList[0]['src']
+                    if self.checkType(prevNode) == 'Bird':
+                        birdId = birdEdgeList[0]['src']
+            if birdId != -1:
+                return self.checkType(birdId) == 'Bird'
+            else:
+                return False
+
+        # check for link to the next node and that the node connected to it is of a certin type
+        # hardcoded to work with two empty tiles and only 1 outgoing link between them
+        def findNextNode(id, type):
+            nextNodeId = -1
+            linkEdgeList = self.findToEdges(id)
+            if len(linkEdgeList) > 0:
+                for node in linkEdgeList:
+                    n = node['dest']
+                    if self.checkType(n) ==type:
+                            nextNodeId = n
+            return nextNodeId
+
+        # check if the rule is of move forward type
+        # hardcoded for one direction
+        def isMoveForward(lhsFace, rhsFace, lhsstartNode, rhsstartNode):
+            checkMoveForward = lhsFace == rhsFace
+            lhsLink = self.findToEdges(lhsstartNode)
+            if len(lhsLink) == 1:
+                lhsDirectionId = lhsLink[0]['dest']
+                lhsLastNode= findNextNode(lhsDirectionId,'Empty')
+                if lhsLastNode != -1:
+                    isLhsBirdInLast = isBirdOnTile(lhsLastNode)
+            else:
+                isLhsBirdInLast = False
+            
+            
+
+            rhsLink = self.findToEdges(rhsstartNode,)
+            if len(rhsLink) == 1:
+                rhsDirectionId = rhsLink[0]['dest']
+                rhsLastNode= findNextNode(rhsDirectionId,'Empty')
+                if rhsLastNode != -1:
+                    isRhsBirdInLast = isBirdOnTile(rhsLastNode)
+            else:
+                isRhsBirdInLast = False
+            
+            isLhsBirdInFirst = isBirdOnTile(lhsstartNode)
+            
+            isRhsBirdInFirst = isBirdOnTile(rhsstartNode)
+
+            # move east
+            if isLhsBirdInFirst and isRhsBirdInLast and self.checkType(lhsDirectionId) =='east' and self.checkType(rhsDirectionId) =='east':
+
+                return checkMoveForward and True
+
+            # move south
+            if isLhsBirdInFirst and isRhsBirdInLast and self.checkType(lhsDirectionId) =='south' and self.checkType(rhsDirectionId) =='south':
+
+                return checkMoveForward and True
+            # move west
+            if isLhsBirdInLast and isRhsBirdInFirst and self.checkType(lhsDirectionId) =='east' and self.checkType(rhsDirectionId) =='east':
+
+                return checkMoveForward and True
+            # move north
+            if isLhsBirdInLast and isRhsBirdInFirst and self.checkType(lhsDirectionId) =='south' and self.checkType(rhsDirectionId) =='south':
+
+                return checkMoveForward and True
+
+        isMovePattern = isMoveForward(lhsBirdFacing, rhsBirdFacing, lhsstart, rhsstart)
+
+        swap = False
+        direction =''
         # creating and labeling the pattern
         label = labelBird(label)
         label = labelPig(label)
@@ -466,23 +544,50 @@ class MdeContext(TransformationContext) :
         label = label +1
         label = labelOn(currentLhsNode,currentRhsNode,label)
         
-        #move
-        if lhsBirdFacing == rhsBirdFacing:
-            
-            
+        if isMovePattern:
             currentLhsNodeOutgoingEdges = self.findToEdges(currentLhsNode)
             currentRhsNodeOutgoingEdges = self.findToEdges(currentRhsNode)
             for xnode in currentLhsNodeOutgoingEdges:
                 currentLhsNode = xnode['dest']
                 if currentLhsNode not in labeled:
-                    #move south
+                    #move east check
+                    if self.birdMazeFacing == 'Right':
+                        direction ='east'
+                        if lhsBirdFacing == 'Right' or lhsBirdFacing == 'Down':
+                            swap = False
+                        elif lhsBirdFacing == 'Left' or lhsBirdFacing == 'Up':
+                            swap = True
+                    #move west check
+                    if self.birdMazeFacing == 'Left':
+                        direction ='east'
+                        if lhsBirdFacing == 'Right' or lhsBirdFacing == 'Down':
+                            swap = True
+                        elif lhsBirdFacing == 'Left' or lhsBirdFacing == 'Up':
+                            swap = False
+                    #move south check
+                    if self.birdMazeFacing == 'Down':
+                        direction ='south'
+                        if lhsBirdFacing == 'Right' or lhsBirdFacing == 'Down':
+                            swap = False
+                        elif lhsBirdFacing == 'Left' or lhsBirdFacing == 'Up':
+                            swap = True
+                    #move north check
+                    if self.birdMazeFacing == 'Up':
+                        direction ='south'
+                        if lhsBirdFacing == 'Right' or lhsBirdFacing == 'Down':
+                            swap = True
+                        elif lhsBirdFacing == 'Left' or lhsBirdFacing == 'Up':
+                            swap = False
+
+
+                    #move pattern creation
                     if self.t['nodes'][currentLhsNode]['$type']== self.birdmodel+'/south':
-                        createLhsTileLink(currentLhsNode,'south')
+                        createLhsTileLink(currentLhsNode,direction)
                         linkedLhsEdges = self.findToEdges(xnode['dest'])
                         currentLhsNode = linkedLhsEdges[0]['dest']
                         for yNode in currentRhsNodeOutgoingEdges:
                             if yNode['dest'] not in labeled and self.t['nodes'][yNode['dest']]['$type']== self.birdmodel+'/south':
-                                createRhsTileLink(yNode['dest'],'south')
+                                createRhsTileLink(yNode['dest'],direction)
                                 linkedRhsEdges = self.findToEdges(yNode['dest'])
                                 currentRhsNode = linkedRhsEdges[0]['dest']
                         label = label+1
@@ -490,14 +595,13 @@ class MdeContext(TransformationContext) :
                         createRhsNode('Empty')
                         label = label+1
                         label = labelOn(currentLhsNode,currentRhsNode,label)
-                    #move east
                     elif self.t['nodes'][currentLhsNode]['$type']== self.birdmodel+'/east':
-                        createLhsTileLink(currentLhsNode,'east')
+                        createLhsTileLink(currentLhsNode,direction)
                         linkedLhsEdges = self.findToEdges(xnode['dest'])
                         currentLhsNode = linkedLhsEdges[0]['dest']
                         for yNode in currentRhsNodeOutgoingEdges:
                             if yNode['dest'] not in labeled and self.t['nodes'][yNode['dest']]['$type']== self.birdmodel+'/east':
-                                createRhsTileLink(yNode['dest'],'east')
+                                createRhsTileLink(yNode['dest'],direction)
                                 linkedRhsEdges = self.findToEdges(yNode['dest'])
                                 currentRhsNode = linkedRhsEdges[0]['dest']
                         label = label+1
@@ -512,25 +616,49 @@ class MdeContext(TransformationContext) :
             #turn right
             elif lhsBirdFacing == 'Right' and rhsBirdFacing == 'Down' or lhsBirdFacing == 'Down' and rhsBirdFacing == 'Left' or lhsBirdFacing == 'Left' and rhsBirdFacing == 'Up' or lhsBirdFacing == 'Up' and rhsBirdFacing == 'Right':
                 rule ['nodes'][str(rhsNode)]['Action']['value']= turnRight
-            
-
-
+        
+        
         #genertae the edges
+        edgesLinksIndexList = []
         createContainmentLinks()
         for id in lhs:
             currentLhsNodeOutgoingEdges = self.findToEdges(id)
             currentLhsNodeIncommingEdges = self.findFromEdges(id)
             createEdges(currentLhsNodeOutgoingEdges)
+            if isMovePattern:
+                if len(currentLhsNodeOutgoingEdges) > 0:
+                    if currentLhsNodeOutgoingEdges[0]['dest'] == linkedLhsEdges[0]['src'] or currentLhsNodeOutgoingEdges[0]['src'] == linkedLhsEdges[0]['src'] :
+                        edgesLinksIndexList.append(rule['edges'][-1])
             for missingEdge in currentLhsNodeIncommingEdges:
                 if missingEdge not in rule['edges']:
                     rule['edges'].append(missingEdge)
+
+                    if isMovePattern:
+                        if missingEdge['dest'] == linkedLhsEdges[0]['src'] or missingEdge['src'] == linkedLhsEdges[0]['src'] :
+                            edgesLinksIndexList.append(rule['edges'][-1])
         for id in rhs:
             currentRhsNodeOutgoingEdges = self.findToEdges(id)
             currentRhsNodeIncommingEdges = self.findFromEdges(id)
             createEdges(currentRhsNodeOutgoingEdges)
+            
+            if isMovePattern:
+                if len(currentRhsNodeOutgoingEdges) > 0:
+                    if currentRhsNodeOutgoingEdges[0]['dest'] == linkedRhsEdges[0]['src'] or currentRhsNodeOutgoingEdges[0]['src'] == linkedRhsEdges[0]['src'] :
+                        edgesLinksIndexList.append(rule['edges'][-1])
             for missingEdge in currentRhsNodeIncommingEdges:
                 if missingEdge not in rule['edges']:
                     rule['edges'].append(missingEdge)
+                    if isMovePattern:
+                        if missingEdge['dest'] == linkedRhsEdges[0]['src'] or missingEdge['src'] == linkedRhsEdges[0]['src'] :
+                            edgesLinksIndexList.append(rule['edges'][-1])
+        
+        # change the direction of movment if needed
+        if swap:
+            for item in edgesLinksIndexList:
+                index = rule['edges'].index(item)
+                rule['edges'][index]= {'src': rule['edges'][index]['dest'],
+                                        'dest':rule['edges'][index]['src']}
+
 
         return rule
         
