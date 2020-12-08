@@ -444,6 +444,7 @@ class PyTCoreAbstractionLayer :
                 self._execmode = _execmode
         self.bdapiQueue = Queue()
         ns = mtc.nextStep()
+        
 
         if ns.__class__ != {}.__class__ :
             if len(self._mtContexts) > 1 :
@@ -1042,6 +1043,7 @@ class PyTCoreAbstractionLayer :
                 else :
                     return (None,TC.FAILED)
                 ''' hergin :: motif-integration end '''
+            
 
 
         try :
@@ -1098,9 +1100,15 @@ class PyTCoreAbstractionLayer :
                 return True
             else:
                 (res,ai) = runRule(nr)
+                ''' mohanad :: mde-integration :: start '''
+                if self._mtContexts[-1].metamodel ==TC.MDE:
+                    self._mtContexts[-1].updateStep(self._mtContexts[-1].getCurrentStepId())
+                ''' mohanad :: mde-integration :: end '''
+
+
             self._mtContexts[-1].setLastStepApplicationInfo(ai)
 
-            ''' mohanad :: motif-integration :: start '''
+            ''' mohanad :: mde-integration :: start '''
             # highlght the transformation in the same instance
             if self._mtContexts[-1].metamodel ==TC.MDE:
 
@@ -1108,7 +1116,7 @@ class PyTCoreAbstractionLayer :
                             '127.0.0.1:8124',
                             self._aswCommTools['wid'],
                             self._mtContexts[-1].getCurrentStepId())
-            ''' mohanad :: motif-integration :: end '''
+            ''' mohanad :: mde-integration :: end '''
             if ai == TC.FAILED and self.incUpdates:
                 ''' hergin :: motif-integration modify (which rule is not succeeded) '''
                 self._aswPrintReq(TC.RULE_FAILURE_MSG+" ("+self._mtContexts[-1]._lastStep['alias']+":"+self._mtContexts[-1]._lastStep['name']+")")

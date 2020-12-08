@@ -1696,7 +1696,7 @@
 							"428": {
 								"textContent": {
 									"type": "string",
-									"value": "1"
+									"value": 2
 								},
 								"style": {
 									"type": "map<string,string>",
@@ -6314,7 +6314,7 @@
 				},
 				"count": {
 					"type": "int",
-					"value": "1"
+					"value": 2
 				},
 				"name": {
 					"type": "string",

@@ -39,10 +39,13 @@ class MdeContext(TransformationContext) :
         self.lastNode= 0 # used to know the last node id and start the nodes for the patterns after the last node
         self.MazePosition = 650
         self.mazeNodesId =[]
+        self.birdMazeId = -1
         self.birdMazeFacing= ''
         self.ruleBirdNodesId=[]
         self.ruleId=[]
         self.queryId=[]
+        self.action=[]
+
 
         '''
         Identify items in canvas and make lists of input side and transformation side
@@ -58,9 +61,9 @@ class MdeContext(TransformationContext) :
                             self.haswid,
                             self.startStateID)
             elif self.t['nodes'][id]['$type'] == self.metamodel+"/Query":
-                self.ruleId.append(id)
+                self.ruleId.append([id, True])
             elif self.t['nodes'][id]['$type'] == self.metamodel+"/Rule":
-                self.ruleId.append(id)
+                self.ruleId.append([id, True])
             elif self.t['nodes'][id]['$type'] == self.birdmodel+"/Empty":
                 if self.t['nodes'][id]['position']['value'][0] < self.MazePosition:
                     self.mazeNodesId.append(id)
@@ -74,6 +77,7 @@ class MdeContext(TransformationContext) :
             elif self.t['nodes'][id]['$type'] == self.birdmodel+"/Bird":
                 if self.t['nodes'][id]['position']['value'][0] < self.MazePosition:
                     self.mazeNodesId.append(id)
+                    self.birdMazeId= id
                     self.birdMazeFacing= self.t['nodes'][id]['facing']['value']
                 else:
                     self.ruleBirdNodesId.append(id)
@@ -85,16 +89,24 @@ class MdeContext(TransformationContext) :
         
         '''
         Creating rules list
-        '''
+
+        It checks every element in ruleID list [id of a node, boolean if it need to be recreated or not]
+        then it add it to the self.rules list with the compiled rule
+        '''        
+        self.createRuleList()
+    def createRuleList(self):
+        
         for r in self.ruleId:
-            if self.t['nodes'][r]['name']['value'] == '':
-                self.t['nodes'][r]['name']['value'] = 'ruleIdNum'+str(r)
-            self.rules[r] = {'id':r,
-                                    'name':self.t['nodes'][r]['name']['value'],
+            if r[1]:
+                indexOfRule = self.ruleId.index(r)
+                self.ruleId[indexOfRule] = [r[0], False]
+                if self.t['nodes'][r[0]]['name']['value'] == '':
+                    self.t['nodes'][r[0]]['name']['value'] = 'ruleIdNum'+str(r[0])
+                self.rules[r[0]] = {'id':r[0],
+                                    'name':self.t['nodes'][r[0]]['name']['value'],
                                     'alias':'',
-                                    'rule':self.createCompiledRules(r)}
-        
-        
+                                    'rule':self.createCompiledRules(r[0])}
+    
     
     def createCompiledRules(self,ruleId):
         if self.t['nodes'][ruleId]['$type'] == self.metamodel+"/Rule":
@@ -127,7 +139,7 @@ class MdeContext(TransformationContext) :
         return lhsElements
 
     '''
-    finding rhs in a rule #to work on add edges and return 
+    finding rhs in a rule 
     '''
     def findRhsElements(self,ruleid,element):
         rhsElements = []
@@ -157,7 +169,8 @@ class MdeContext(TransformationContext) :
     
     ''' find the starting point to convert lhs, rhs and querry to a pattern
         This is done by finding the empty tile that is not a distnation of another tile in either east or south
-        if more than one empty tile found, an error will rise'''
+        if more than one empty tile found, an error will rise
+    '''
     def findPatternStart(self, idList):
         edges=[]
         for id in idList:
@@ -325,7 +338,6 @@ class MdeContext(TransformationContext) :
 
         def createBirdNode(place,nodeId,f):
             if place == 'lhs':
-                #f= self.birdMazeFacing= self.t['nodes'][nodeId]['facing']['value']
                 labeled.append(nodeId)
                 rule['nodes'][nodeId] = {"__pLabel": {
                         					"type": "string",
@@ -348,7 +360,6 @@ class MdeContext(TransformationContext) :
 				                        "$type": "/Formalisms/Bird/Bird.pattern/__pBird"}
 
             elif place == 'rhs':
-                #f= self.birdMazeFacing= self.t['nodes'][nodeId]['facing']['value']
                 labeled.append(nodeId)
                 rule['nodes'][nodeId] = {"__pLabel": {
 					                        "type": "string",
@@ -545,6 +556,10 @@ class MdeContext(TransformationContext) :
         label = labelOn(currentLhsNode,currentRhsNode,label)
         
         if isMovePattern:
+            #this part to update the bird facing for general move forward
+            indexOfMovePattern = self.ruleId.index([ruleId,False])
+            self.ruleId[indexOfMovePattern]= [ruleId, True]
+            #end of update facing part
             currentLhsNodeOutgoingEdges = self.findToEdges(currentLhsNode)
             currentRhsNodeOutgoingEdges = self.findToEdges(currentRhsNode)
             for xnode in currentLhsNodeOutgoingEdges:
@@ -613,12 +628,19 @@ class MdeContext(TransformationContext) :
             #turn left
             if lhsBirdFacing == 'Right' and rhsBirdFacing == 'Up' or lhsBirdFacing == 'Up' and rhsBirdFacing == 'Left' or lhsBirdFacing == 'Left' and rhsBirdFacing == 'Down' or lhsBirdFacing == 'Down' and rhsBirdFacing == 'Right':
                 rule ['nodes'][str(rhsNode)]['Action']['value']= turnLeft
+                self.action.append([ruleId,'left'])
+                
             #turn right
             elif lhsBirdFacing == 'Right' and rhsBirdFacing == 'Down' or lhsBirdFacing == 'Down' and rhsBirdFacing == 'Left' or lhsBirdFacing == 'Left' and rhsBirdFacing == 'Up' or lhsBirdFacing == 'Up' and rhsBirdFacing == 'Right':
                 rule ['nodes'][str(rhsNode)]['Action']['value']= turnRight
+                self.action.append([ruleId,'right'])
+               
+
+               
+            
         
         
-        #genertae the edges
+        #genertae the edges and containment links
         edgesLinksIndexList = []
         createContainmentLinks()
         for id in lhs:
@@ -659,6 +681,12 @@ class MdeContext(TransformationContext) :
                 rule['edges'][index]= {'src': rule['edges'][index]['dest'],
                                         'dest':rule['edges'][index]['src']}
 
+        print('Labeled Nodes:')
+        print(labeled)
+        print('End Labeled Nodes!!!')
+        print('Rule pattern:')
+        print(rule)
+        print('End Rule pattern!!!')
 
         return rule
         
@@ -879,6 +907,13 @@ class MdeContext(TransformationContext) :
                 if missingEdge not in rule['edges']:
                     rule['edges'].append(missingEdge)
         
+
+        print('Labeled for querry Nodes:')
+        print(labeled)
+        print('End Labeled Nodes!!!')
+        print('querry pattern:')
+        print(rule)
+        print('End querry pattern!!!')
         return rule
         
 
@@ -901,6 +936,29 @@ class MdeContext(TransformationContext) :
                 return 'south'
             
 
+    def birdTurn(self, bird, t):
+        face =''
+        if t == 'left':
+            if bird == 'Right':
+                face = 'Up'
+            elif bird == 'Up':
+                face = 'Left'
+            elif bird == 'Left':
+                face = 'Down'
+            elif bird == 'Down':
+                face = 'Right'
+            return face    
+        
+        if t == 'right':
+            if bird == 'Right':
+                face = 'Down'
+            elif bird == 'Down':
+                face = 'Left'
+            elif bird == 'Left':
+                face = 'Up'
+            elif bird == 'Up':
+                face = 'Right'
+            return face
 
     def findToEdges(self,nodeId):
         def f(e) :
@@ -967,7 +1025,23 @@ class MdeContext(TransformationContext) :
                 return {'trafoResult':TC.SUCCEEDED,
                         'feedbackReceived':'True'}
             
+    '''
+    check if the patterns need to be updated before running the rule on the nextStep
 
+    it is hard coded to update the facing value of the bird in the maze to generalize the move forward pattern
+    then it clear the compiled rules list 
+    after that it recreate the rules list
+    '''
+    def updateStep(self,id):
+        if len(self.action) > 0 and self.action[-1][0] == id and (self.action[-1][1] == 'left'  or self.action[-1][1] == 'right'):
+                    self.birdMazeFacing = self.birdTurn(self.birdMazeFacing, self.action[-1][1])
+                    if [id,False] in self.ruleId:
+                        indexOfMovePattern = self.ruleId.index([id,False])
+                        self.ruleId[indexOfMovePattern]= [id, True]
+                    self.action = []
+        self.compiler.forgetCompiledRules()
+        self.createRuleList()
+       
 
 
     '''
@@ -998,8 +1072,9 @@ class MdeContext(TransformationContext) :
             
             
             '''
-
+   
     def nextStep(self) :
+
         def getNextStepId(id):
             edgesFromLastStep = self.findToEdges(id)
 
@@ -1053,8 +1128,12 @@ class MdeContext(TransformationContext) :
                 return ai
             else :
                 nextStepID = getNextStepId(self._lastStep['id'])
+                
 
                 if nextStepID in self.rules:
+                    if [nextStepID, False] in self.ruleId:
+                        indexOfStep = self.ruleId.index([nextStepID, False])
+                        self.ruleId[indexOfStep] = [nextStepID, True]
                     self._lastStep = self.rules[nextStepID]
                 elif self.t['nodes'][nextStepID]['$type']==self.metamodel+"/RuleEntry":
                     nextStepID = getNextStepId(nextStepID)
