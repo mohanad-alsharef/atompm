@@ -681,13 +681,6 @@ class MdeContext(TransformationContext) :
                 rule['edges'][index]= {'src': rule['edges'][index]['dest'],
                                         'dest':rule['edges'][index]['src']}
 
-        print('Labeled Nodes:')
-        print(labeled)
-        print('End Labeled Nodes!!!')
-        print('Rule pattern:')
-        print(rule)
-        print('End Rule pattern!!!')
-
         return rule
         
     def createQueryPattern(self,ruleId):
@@ -906,14 +899,7 @@ class MdeContext(TransformationContext) :
             for missingEdge in currentLhsNodeIncommingEdges:
                 if missingEdge not in rule['edges']:
                     rule['edges'].append(missingEdge)
-        
 
-        print('Labeled for querry Nodes:')
-        print(labeled)
-        print('End Labeled Nodes!!!')
-        print('querry pattern:')
-        print(rule)
-        print('End querry pattern!!!')
         return rule
         
 

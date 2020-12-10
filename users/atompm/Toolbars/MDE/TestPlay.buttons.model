@@ -578,7 +578,7 @@
 				},
 				"code": {
 					"type": "code",
-					"value": "httpReq(\n                        'PUT',\n                        '/__mt/current.transform?wid='+_context.wid,\n                        {'transfs':[__saveas],\n                         'username':_context.username});\n               "
+					"value": "httpReq(\n                        'PUT',\n                        '/__mt/mde.transform?wid='+_context.wid,\n                        {'transfs':[__saveas],\n                         'username':_context.username});\n               "
 				},
 				"$type": "/Formalisms/__Utilities__/Buttons/Buttons/Button"
 			},
@@ -593,7 +593,7 @@
 				},
 				"code": {
 					"type": "code",
-					"value": "GUIUtils.resetCanvas() \n_loadModel(__saveas);\n"
+					"value": "\nGUIUtils.resetCanvas()\n_loadModel(__saveas)\n"
 				},
 				"$type": "/Formalisms/__Utilities__/Buttons/Buttons/Button"
 			}
